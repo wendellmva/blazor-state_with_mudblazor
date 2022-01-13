@@ -1,0 +1,38 @@
+﻿@page "/example"
+@using BlazorApp1.Features.Apps
+@using BlazorApp1.Models
+@inherits BlazorState.BlazorStateComponent
+
+<PageTitle>Example</PageTitle>
+
+<h1>Example</h1>
+
+<MudPaper Class="pa-2 mt-2">
+    <MudText Typo="@Typo.subtitle1">Activated item: @(ActivatedValue?.Title)</MudText>
+    <MudText Typo="@Typo.subtitle1">Sum of selected items: @GetSelectedSum()</MudText>
+</MudPaper>
+
+@code {
+
+    private AppState AppState => Store.GetState<AppState>();
+    private TreeItemData ActivatedValue => AppState.ActivatedValue;
+    private HashSet<TreeItemData> SelectedValues => AppState.SelectedValues;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AppState.DrawerEnd == false)
+        {
+            await Mediator.Send(new AppState.ToggleDrawerEndAction { DrawerEnd = !AppState.DrawerEnd });
+        }
+        if (AppState.DrawerComponent != typeof(Sidebar))
+        {
+            await Mediator.Send(new AppState.LoadDrawerComponentAction(typeof(Sidebar)));
+        }
+        
+    }
+
+    public int GetSelectedSum()
+    {
+        return SelectedValues?.Sum(i => i.Number ?? 0) ?? 0;
+    }
+}

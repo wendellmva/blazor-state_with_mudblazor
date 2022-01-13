@@ -1,0 +1,51 @@
+﻿@using Microsoft.AspNetCore.Components
+@using BlazorApp1.Models
+@using BlazorApp1.Features.Apps
+@inherits BlazorStateComponent
+
+<MudContainer>
+    <MudPaper Elevation="0">
+@*        <MudTreeView Items="TreeItems" MultiSelection="true" SelectedValuesChanged="@SelectedValuesChanged">*@
+      <MudTreeView Items="TreeItems" MultiSelection="true" SelectedValues="@SelectedValues">
+            <ItemTemplate>
+                <MudTreeViewItem @bind-Expanded="@context.IsExpanded" Items="@context.TreeItems" Value="@context"
+                                 Icon="@context.Icon" Text="@context.Title" EndText="@context.Number?.ToString()" EndTextTypo="@Typo.caption" />
+            </ItemTemplate>
+        </MudTreeView>
+    </MudPaper>
+</MudContainer>
+
+@code {
+
+    public AppState AppState => Store.GetState<AppState>();
+
+    private HashSet<TreeItemData> TreeItems { get; } = new();
+
+    //private HashSet<TreeItemData> SelectedValues => AppState.SelectedValues;
+    private HashSet<TreeItemData> SelectedValues { get; set; }
+
+    private async Task SelectedValuesChanged(HashSet<TreeItemData> selectedValues)
+    {
+        await Mediator.Send(new AppState.SelectedValuesChangedAction(selectedValues));
+    }
+
+    protected override void OnInitialized()
+    {
+        Console.WriteLine("sidebar:on:initialized");
+        
+        TreeItems.Add(new TreeItemData("All Mail", Icons.Filled.Email));
+        TreeItems.Add(new TreeItemData("Trash", Icons.Filled.Delete));
+        TreeItems.Add(new TreeItemData("Categories", Icons.Filled.Label)
+        {
+            IsExpanded = true,
+            TreeItems = new HashSet<TreeItemData>
+            {
+                new("Social", Icons.Filled.Group, 90),
+                new("Updates", Icons.Filled.Info, 2294),
+                new("Forums", Icons.Filled.QuestionAnswer, 3566),
+                new("Promotions", Icons.Filled.LocalOffer, 733)
+            }
+        });
+        TreeItems.Add(new TreeItemData("History", Icons.Filled.Label));
+    }
+}
